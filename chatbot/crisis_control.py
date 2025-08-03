@@ -1,19 +1,18 @@
-import ollama
+from dotenv import load_dotenv
+import os
 import smtplib
 from email.mime.text import MIMEText
 
-def check_for_crisis(user_message):
-    # Basic crisis keywords list - expand as needed
+def check_for_crisis(user_message: str) -> bool:
     crisis_keywords = [
         "suicide", "kill myself", "end my life", "hopeless", "no way out",
         "want to die", "self-harm", "can't go on", "kill me", "thoughts of death",
-        "overwhelmed", "give up", "feel trapped"
+        "overwhelmed", "give up", "feel trapped", "go on anymore"
     ]
     msg = user_message.lower()
     return any(keyword in msg for keyword in crisis_keywords)
 
-def crisis_response():
-    # Predefined crisis resource message
+def crisis_response() -> str:
     return (
         "I'm really sorry to hear that you're struggling. "
         "You are not alone, and there are people who want to help you. "
@@ -24,13 +23,17 @@ def crisis_response():
         "Your safety is the most important thing right now."
     )
 
-def send_crisis_notification(user_message, username, contact_info):
+load_dotenv()
+def send_crisis_notification(user_message: str, username: str, contact_info: str) -> None:
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
-    sender_email = 'vanshgaming173@gmail.com'
-    sender_password = 'koti xnpx srap rlwu'
+    sender_email = os.getenv('SENDER_EMAIL')
+    sender_password = os.getenv('EMAIL_APP_PASSWORD')
+    receiver_email = os.getenv('RECEIVER_EMAIL')
 
-    receiver_email = 'dhanushkarguin10@gmail.com'
+    if not all([sender_email, sender_password, receiver_email]):
+        print("ERROR: Missing email configuration in environment variables.")
+        return
 
     subject = 'CRISIS ALERT - User message flagged'
     body = (
@@ -55,20 +58,3 @@ def send_crisis_notification(user_message, username, contact_info):
         print("Crisis notification sent successfully.")
     except Exception as e:
         print("Failed to send crisis notification:", e)
-
-user_input = "I feel very hopeless right now."
-username = "Abdul_Rehman_Burhan"
-contact_info = "adobeanimate2025@outlook.com"
-
-if check_for_crisis(user_input):
-    send_crisis_notification(user_input, username, contact_info)
-    response_text = crisis_response()
-else:
-    # Normal chat flow
-    response = ollama.chat(
-        model='llama3:8b',
-        messages=[{'role': 'user', 'content': user_input}]
-    )
-    response_text = response['message']['content']
-
-print(response_text)
