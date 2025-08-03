@@ -1,20 +1,29 @@
 import ollama
 from crisis_control import check_for_crisis, crisis_response, send_crisis_notification
+from avatars import avatars
 
 def run_chatbot():
-    ## Example User Input
-    user_input = "I am feeling sad because I couldn't get the job I wanted.Should I consider suicide?"
-    username = "Abdul_Rehman_Burhan"
+    ## User Input
+    user_input = "I am feeling really anxious and overwhelmed right now."
+    username = "Dhanu-jodd"
     contact_info = "adobeanimate2025@outlook.com"
+
+    ## Avatar Selection
+    avatar_name = "Anxiety"
+    system_prompt = avatars[avatar_name]["prompt"]
 
     if check_for_crisis(user_input):
         send_crisis_notification(user_input, username, contact_info)
         response_text = crisis_response()
     else:
         try:
+            messages = [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_input}
+            ]
             response = ollama.chat(
                 model='llama3:8b',
-                messages=[{'role': 'user', 'content': user_input}]
+                messages=messages
             )
             response_text = response['message']['content']
         except Exception as e:
