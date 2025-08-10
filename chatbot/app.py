@@ -3,9 +3,11 @@ from crisis_control import check_for_crisis, crisis_response, send_crisis_notifi
 from avatars import avatars
 
 conversation_history = []
+user_input = None
 
 def run_chatbot():
     ## User Input
+    global user_input
     user_input = "I went to an interview today, interviewer told me I lack vision and I am not fit for the job. I feel like giving up on my career."
     username = "Dhanu-jodd"
     contact_info = "adobeanimate2025@outlook.com"
