@@ -4,10 +4,11 @@ from avatars import avatars
 
 conversation_history = []
 user_input = None
+response_text = None
 
 def run_chatbot():
     ## User Input
-    global user_input
+    global user_input, response_text
     user_input = "I went to an interview today, interviewer told me I lack vision and I am not fit for the job. I feel like giving up on my career."
     username = "Dhanu-jodd"
     contact_info = "adobeanimate2025@outlook.com"
@@ -41,7 +42,8 @@ def run_chatbot():
         except Exception as e:
             response_text = f"Error during chatbot response: {str(e)}"
 
-    print(response_text)
+    return response_text
 
 if __name__ == "__main__":
-    run_chatbot()
+    reply = run_chatbot()
+    print(reply)
