@@ -1,2 +1,5 @@
 ollama
 dotenv
+vosk
+sounddevice
+transformers
