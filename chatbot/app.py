@@ -1,27 +1,31 @@
+# --- Libraries and imports --- #
 import ollama
 from crisis_control import check_for_crisis, crisis_response, send_crisis_notification
 from avatars import avatars
 
+# --- Global Scope Constraints --- #
 conversation_history = []
+user_prompts = ["I am really sad", "I have been facing anxiety issues"]
 user_input = None
 response_text = None
 
+# --- Main chatbot function --- #
 def run_chatbot():
-    ## User Input
-    global user_input, response_text
+    # - User Details - # 
+    global user_input, response_text, user_prompts
     username = "Dhanu-jodd"
     contact_info = "adobeanimate2025@outlook.com"
 
-    ## Avatar Selection
+    # - Avatar Selection - #
     avatar_name = "Academic/Career Stress"
     system_prompt = avatars[avatar_name]["prompt"]
 
-    ## Past Context Feature": conversation history
+    # - Conversation History for past context - #
     conversation_history = [
         {"role":"system", "content": system_prompt}
     ]
 
-    ## Chat loop
+    # - Chat loop - #
     print("Chatbot is ready! Type 'exit' to quit.\n")
 
     while True:
@@ -30,7 +34,10 @@ def run_chatbot():
             print('Chatbot: Goodbye')
             break
 
+        user_prompts.append(user_input)
+
         conversation_history.append({"role":"user","content":user_input})
+        
         
         if check_for_crisis(user_input):
             send_crisis_notification(user_input, username, contact_info)
