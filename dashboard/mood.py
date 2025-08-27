@@ -1,7 +1,13 @@
+# --- Libraries and imports --- #
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] =  '3'
+
 import sys
 from dotenv import load_dotenv
 from transformers import pipeline
+from collections import deque, defaultdict
+import matplotlib.pyplot as plt
+from huggingface_hub import login
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 CHATBOT_FOLDER = os.path.join(PROJECT_ROOT, 'chatbot')
@@ -9,24 +15,18 @@ CHATBOT_FOLDER = os.path.join(PROJECT_ROOT, 'chatbot')
 sys.path.append(CHATBOT_FOLDER)
 import app
 
+# --- Running other file for passing data --- #
 app.run_chatbot()
-user_input = app.user_input
+user_prompts = app.user_prompts
 
+# --- Loading Pipeline --- #
 load_dotenv('.env.dashboard')
 access_token = os.getenv('API_KEY')
+login(access_token)
 
-sentiment_analysis = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", token=access_token)
+sentiment_analysis = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", framework='pt')
 
-result = sentiment_analysis(user_input)[0]
-detected_mood = result['label']
-
-moods_detected = []
-
-moods_detected.append(detected_mood)
-
-from collections import deque, defaultdict
-import matplotlib.pyplot as plt
-
+# --- Class for mood tracking --- #
 class MoodTracker:
     def __init__(self, max_size=100, moods=None):
         self.max_size = max_size
@@ -54,11 +54,6 @@ class MoodTracker:
     def total_tracked(self):
         return len(self.mood_queue)
 
-tracker = MoodTracker(max_size=100)
-
-for mood in moods_detected:
-    tracker.track_mood(mood)
-
 def plot_mood_counts(mood_counts):
     moods = list(mood_counts.keys())
     counts = list(mood_counts.values())
@@ -69,13 +64,19 @@ def plot_mood_counts(mood_counts):
     plt.title("Mood Counts in the Last 100 Messages")
     plt.xlabel("Mood")
     plt.ylabel("Count")
-    plt.ylim(0, max(counts) + 5)
+    plt.ylim(0, max(counts) + 5 if counts else 5)
 
     for bar in bars:
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2, yval + 0.5, int(yval), ha='center', va='bottom')
 
     plt.show()
+
+tracker = MoodTracker(max_size=100)
+for prompt in user_prompts:
+        result = sentiment_analysis(prompt)[0]
+        detected_mood = result['label']
+        tracker.track_mood(detected_mood)
 
 current_counts = tracker.get_mood_counts()
 plot_mood_counts(current_counts)
