@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  ai_therapist:
+    build: .
+    image: ai_therapist
+    container_name: ai_therapist_dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    deploy: {}        # needed for compatibility, but empty
+    gpus: all         # this enables GPU inside the container
