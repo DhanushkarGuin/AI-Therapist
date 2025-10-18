@@ -1,0 +1,13 @@
+# All types of csv files
+*.csv
+
+# All types of txt files
+*.txt
+# except
+!requirements.txt
+
+# All types of env files
+.env.*
+
+# Exclude vosk model files
+note-taking/vosk_model/*
