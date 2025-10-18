@@ -11,3 +11,6 @@
 
 # Exclude vosk model files
 note-taking/vosk_model/*
+
+# Exclude ML model files
+*.pkl
