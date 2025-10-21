@@ -1,7 +1,9 @@
 import joblib 
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
-model = joblib.load('model.pkl')
+model = joblib.load('new_model.pkl')
 
 print('Enter the numbers based on options: \n')
 
@@ -66,7 +68,6 @@ user_data = np.array([[current_emotion,
                 ]])
 
 prediction = model.predict(user_data)
-print(prediction)
 
 if prediction == 2 :
     print('We suggest you to try our AI experience')

@@ -26,7 +26,7 @@ def generate_sample():
 
 # --- Create Train Set ---
 train_data = []
-for _ in range(5000):
+for _ in range(8000):
     train_data.append(generate_sample())
 
 train_df = pd.DataFrame(train_data)
@@ -35,7 +35,7 @@ train_df = pd.DataFrame(train_data)
 test_data = set()  # store tuples for fast lookup
 train_set = set(tuple(row) for row in train_df.drop(columns=["label"]).itertuples(index=False, name=None))
 
-while len(test_data) < 1500:  # say 1.5k test samples
+while len(test_data) < 2000:  # say 1.5k test samples
     sample = generate_sample()
     sample_tuple = tuple(sample[q] for q in questions.keys())
     if sample_tuple not in train_set and sample_tuple not in test_data:
