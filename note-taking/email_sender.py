@@ -4,14 +4,14 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 # --- Loading Env files --- #
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env.email"))
+load_dotenv(dotenv_path=".env.email")
 
 # --- Email Sending --- #
 def send_email(recipient_email, text):
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 587
     SMTP_EMAIL = os.getenv("SENDER_EMAIL")
-    SMTP_PASSWORD = os.getenv("SENDER_PASSWORD")
+    SMTP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 
     msg = MIMEText(text, 'plain')
     msg['Subject'] = "Your session's transcription"
