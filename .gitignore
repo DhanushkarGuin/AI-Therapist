@@ -14,3 +14,6 @@ note-taking/vosk_model/*
 
 # Exclude ML model files
 *.pkl
+
+# All pycache files
+__pycache__
