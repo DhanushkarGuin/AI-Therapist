@@ -26,8 +26,6 @@ def crisis_response() -> str:
     )
 
 load_dotenv(dotenv_path='.env.chatbot')
-# sender_password = os.getenv('EMAIL_APP_PASSWORD')
-# print(sender_password);
 
 def send_crisis_notification(user_message: str, username: str, contact_info: str) -> None:
     smtp_server = 'smtp.gmail.com'
