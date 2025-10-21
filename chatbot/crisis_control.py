@@ -25,7 +25,8 @@ def crisis_response() -> str:
         "Your safety is the most important thing right now."
     )
 
-load_dotenv(dotenv_path='D:\AI_Therapist\chatbot\.env.chatbot')
+load_dotenv(dotenv_path='.env.chatbot')
+
 def send_crisis_notification(user_message: str, username: str, contact_info: str) -> None:
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
