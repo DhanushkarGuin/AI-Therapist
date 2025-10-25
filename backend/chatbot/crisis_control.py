@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import os
 import smtplib
 from email.mime.text import MIMEText
+from pathlib import Path
 
 def check_for_crisis(user_message: str) -> bool:
     crisis_keywords = [
@@ -14,6 +15,7 @@ def check_for_crisis(user_message: str) -> bool:
     msg = user_message.lower()
     return any(keyword in msg for keyword in crisis_keywords)
 
+
 def crisis_response() -> str:
     return (
         "I'm really sorry to hear that you're struggling. "
@@ -25,22 +27,22 @@ def crisis_response() -> str:
         "Your safety is the most important thing right now."
     )
 
-load_dotenv(dotenv_path='.env.chatbot')
-# sender_password = os.getenv('EMAIL_APP_PASSWORD')
-# print(sender_password);
+# Load environment
+dotenv_path = Path(__file__).parent / ".env.chatbot"
+load_dotenv(dotenv_path=dotenv_path)
+
+print("Loaded .env.chatbot:", os.getenv('RECEIVER_EMAIL'), flush=True)
 
 def send_crisis_notification(user_message: str, username: str, contact_info: str) -> None:
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    sender_email = os.getenv('SENDER_EMAIL')
-    sender_password = os.getenv('EMAIL_APP_PASSWORD')
-    receiver_email = os.getenv('RECEIVER_EMAIL')
+    sender_email = os.getenv('SENDER_EMAIL', )
+    sender_password = os.getenv('EMAIL_APP_PASSWORD',)
+    receiver_email = os.getenv('RECEIVER_EMAIL',)
 
     if not all([sender_email, sender_password, receiver_email]):
-        print("ERROR: Missing email configuration in environment variables.")
+        print("Crisis notification skipped (missing email configuration).", flush=True)
         return
 
-    subject = 'CRISIS ALERT - User message flagged'
+    subject = 'CRISIS ALERT - Urgent Attention Required'
     body = (
         f"Crisis detected in user message:\n\n{user_message}\n\n"
         f"User details:\n"
@@ -55,11 +57,10 @@ def send_crisis_notification(user_message: str, username: str, contact_info: str
     msg['To'] = receiver_email
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print("Crisis notification sent successfully.")
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print("Crisis notification email sent successfully.", flush=True)
     except Exception as e:
-        print("Failed to send crisis notification:", e)
+        print(f"Failed to send crisis notification: {e}", flush=True)

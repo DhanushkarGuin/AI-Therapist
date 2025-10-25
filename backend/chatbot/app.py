@@ -2,6 +2,40 @@ import sys
 import ollama
 from crisis_control import check_for_crisis, crisis_response, send_crisis_notification
 from avatars import avatars
+import mysql.connector  # ✅ correct import
+
+try:
+    # ✅ Connect to your existing database
+    connection = mysql.connector.connect(
+        host="localhost",         # same as in MySQL Workbench
+        user="root",              # your MySQL username
+        password="Harshad_1551", # your MySQL password
+        database="therapy"  # the one you already created
+    )
+
+    if connection.is_connected():
+        print("✅ Connected to MySQL Database!")
+
+        cursor = connection.cursor()
+
+        # Example: Replace 'your_table_name' with your actual table
+        cursor.execute("SELECT * FROM login")
+
+        results = cursor.fetchall()
+
+        print("\n📋 Table Data:")
+        for row in results:
+            print(row)
+
+except mysql.connector.Error as e:
+    print("❌ Error while connecting to MySQL:", e)
+
+finally:
+    if 'connection' in locals() and connection.is_connected():
+        cursor.close()
+        connection.close()
+        print("\n🔒 MySQL connection closed.")
+
 
 def run_chatbot():
     username = "Dhanu-jodd"
@@ -28,6 +62,7 @@ def run_chatbot():
         try:
             if check_for_crisis(user_input):
                 send_crisis_notification(user_input, username, contact_info)
+                print(f"NOTIFY: Crsis detected for user {username} - notification sent.", flush= True);
                 response_text = crisis_response()
             else:
                 response = ollama.chat(
