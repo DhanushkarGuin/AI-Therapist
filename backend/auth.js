@@ -3,6 +3,8 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const prompt = require('prompt-sync')({ sigint: true });
 const { chatbotFeature } = require('./chatbotTest');
+const { suggestionFeature } = require('./suggestionBOT-test');
+
 const {
     DB_HOST,
     DB_PORT,
@@ -112,10 +114,9 @@ async function featuresSelect(user_id) {
         console.log(`\nChoose Features for User ${user_id}`);
         console.log('1. Chatbot');
         console.log('2. SuggestionBot');
-        console.log('3. Dashboard');
-        console.log('4. Logout');
+        console.log('3. Logout');
 
-        const choice = prompt('Choose(1-4): ');
+        const choice = prompt('Choose(1-3): ');
         if (choice === '1') {
             // Chatbot submenu
             while (true) {
@@ -149,10 +150,8 @@ async function featuresSelect(user_id) {
                 }
             }
         } else if (choice === '2') {
-            console.log('SuggestionBot feature is here');
+            await suggestionFeature();            
         } else if (choice === '3') {
-            console.log('Dashboard feature is here');
-        } else if (choice === '4') {
             console.log('Logged out successfully');
             break;
         } else {

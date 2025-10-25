@@ -1,4 +1,4 @@
-# suggestion_bot.py
+# suggestion-bot/bot.py
 import sys
 import json
 import joblib
@@ -13,10 +13,13 @@ model = joblib.load(model_path)
 
 def get_suggestion(data):
     try:
-        user_data = np.array([[
+        # Map type_concern 0–4 down to 0–2 for model compatibility
+        type_concern = min(2, data["type_concern"] // 2)
+
+        user_data = np.array([[  
             data["current_emotion"],
             data["duration_distress"],
-            data["type_concern"],
+            type_concern,
             data["urgency_level"],
             data["support_style"],
             data["openness_to_technology"],

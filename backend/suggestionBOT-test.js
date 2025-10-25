@@ -13,16 +13,22 @@ async function suggestionFeature() {
 
     const python = spawn("python", ["-u", pythonScript]);
 
+    // Buffer output to handle multi-line JSON
+    let buffer = "";
     python.stdout.on("data", (data) => {
-      const msg = data.toString().trim();
-      try {
-        const parsed = JSON.parse(msg);
-        console.log(`\n🧠 ${parsed.response || parsed.error}\n`);
-        rl.close();
-        python.stdin.end();
-        resolve(); // <-- resolves promise when suggestion is printed
-      } catch {
-        console.log(`Python Output: ${msg}`);
+      buffer += data.toString();
+
+      // Only parse once full JSON arrives
+      if (buffer.trim().endsWith("}")) {
+        try {
+          const parsed = JSON.parse(buffer.trim());
+          console.log(`\n🧠 ${parsed.response || parsed.error}\n`);
+          rl.close();
+          python.stdin.end();
+          resolve();
+        } catch (err) {
+          console.log("⚠️ Waiting for complete data from Python...");
+        }
       }
     });
 
@@ -31,12 +37,16 @@ async function suggestionFeature() {
     });
 
     // Strict input validation function
-    async function askQuestion(question) {
+    async function askQuestion(question, min = 0, max = 2) {
       return new Promise((res) => {
         rl.question(question, (ans) => {
+          if (!/^[0-9]$/.test(ans)) {
+            console.log("\n❌ Invalid input! Enter only a single digit.");
+            process.exit(1);
+          }
           const num = parseInt(ans);
-          if (isNaN(num) || num < 0 || num > 2) {
-            console.log("\n❌ Invalid input! You must enter 0, 1, or 2.");
+          if (num < min || num > max) {
+            console.log(`\n❌ Invalid input! Enter a number between ${min} and ${max}.`);
             process.exit(1);
           } else {
             res(num);
@@ -46,7 +56,7 @@ async function suggestionFeature() {
     }
 
     (async () => {
-      console.log("🤖 Suggestion Bot Started!\nEnter numbers based on options (0-2):\n");
+      console.log("🤖 Suggestion Bot Started!\nEnter numbers based on options.\n");
 
       const current_emotion = await askQuestion(`
 How have you been feeling lately?
@@ -64,12 +74,12 @@ Enter number (0–2): `);
 
       const type_concern = await askQuestion(`
 What would you like to talk about?
-  2: Work or study stress
-  2: Relationship or social issues
-  1: Motivation, self-improvement, or daily balance
-  0: Trauma, loss, or deep emotional pain
+  4: Work or study stress
+  3: Relationship or social issues
+  2: Motivation or daily balance
+  1: Trauma or loss
   0: Thoughts of self-harm or crisis situations
-Enter number (0–2): `);
+Enter number (0–4): `, 0, 4);
 
       const urgency_level = await askQuestion(`
 Do you feel safe right now?
@@ -121,6 +131,5 @@ Enter number (0–2): `);
     })();
   });
 }
-suggestionFeature();
 
 module.exports = { suggestionFeature };
