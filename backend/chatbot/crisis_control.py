@@ -10,7 +10,7 @@ def check_for_crisis(user_message: str) -> bool:
         "want to die", "self-harm", "can't go on", "kill me", "thoughts of death",
         "give up", "feel trapped", "go on anymore", "i wish i were dead", "there's no way out", "life is pointless",
         "no one can help me", "i'm a burden", "i'd be better off dead", "nothing will ever change", "i have no purpose",
-        "everyone would be better off without me", "i can't stop these thoughts"
+        "everyone would be better off without me", "i can't stop these thoughts", "klling",
     ]
     msg = user_message.lower()
     return any(keyword in msg for keyword in crisis_keywords)
