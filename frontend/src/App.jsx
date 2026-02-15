@@ -4,12 +4,14 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ClientDashboard from './pages/ClientDashboard';
 import TherapistDashboard from './pages/TherapistDashboard';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/client-dashboard" element={<ClientDashboard />} />
