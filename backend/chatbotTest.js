@@ -1,107 +1,58 @@
-const readline = require('readline');
-const { spawn } = require('child_process');
-const path = require('path');
+const express = require("express");
+const { spawn } = require("child_process");
 
-async function chatbotFeature(user_id, pool) {
-    console.log('🤖 Chatbot started! Please wait...');
-    // Adjust path for Python script (inside backend/chatbot/app.py)
-    const pythonScript = path.join(__dirname, './chatbot/app.py');
+const router = express.Router();
 
-    // Spawn Python process
-    const python = spawn('python', ['-u', pythonScript], {
-        stdio: ['pipe', 'pipe', 'pipe']
+// Start Python chatbot process ONCE
+const pythonProcess = spawn("python", ["./chatbot/app.py"]);
+
+pythonProcess.stdout.on("data", (data) => {
+  const output = data.toString().trim();
+
+  // Ignore READY signal
+  if (output === "READY") return;
+
+  console.log("PYTHON:", output);
+});
+
+pythonProcess.stderr.on("data", (data) => {
+  console.error("PYTHON ERROR:", data.toString());
+});
+
+// 🔹 POST /chat
+router.post("/chat", (req, res) => {
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({
+      message: "Message is required",
+    });
+  }
+
+  let responded = false;
+
+  const handleResponse = (data) => {
+    if (responded) return;
+    responded = true;
+
+    const reply = data.toString().trim();
+
+    // Ignore READY again just in case
+    if (reply === "READY") return;
+
+    res.status(200).json({
+      reply,
     });
 
-    let isReady = false;
+    // Clean up listener
+    pythonProcess.stdout.removeListener("data", handleResponse);
+  };
 
-    // Handle output from Python
-    python.stdout.on('data', async (data) => {
-        const message = data.toString().trim();
-        if (!message) return;
+  // Listen ONCE for response
+  pythonProcess.stdout.on("data", handleResponse);
 
-        // Bot ready message
-        if (message.includes('READY')) {
-            isReady = true;
-            console.log(' Chatbot connected! Type your message below.\n');
-            return;
-        }
+  // Send message to Python
+  pythonProcess.stdin.write(message + "\n");
+});
 
-        // Crisis alert message from Python
-        if (message.startsWith('NOTIFY:')) {
-            const notification = message.replace('NOTIFY:', '').trim();
-            console.log('\n===============================');
-            console.log('   CRISIS ALERT DETECTED');
-            console.log('===============================');
-            console.log(notification);
-            console.log('===============================\n');
-            return;
-        }
-
-        // Regular chatbot output
-        console.log(`Bot: ${message}\n`);
-
-        // Save bot response to database
-        try {
-            await pool.query(
-                'INSERT INTO chat_history (user_id, sender, message) VALUES (?, ?, ?)',
-                [user_id, 'bot', message]
-            );
-        } catch (err) {
-            console.error('DB Error (bot message):', err.message);
-        }
-    });
-
-    // Handle Python errors
-    python.stderr.on('data', (data) => {
-        console.error(`Python Error: ${data}`);
-    });
-
-    // Read user input from terminal
-    await new Promise((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-
-        async function askUser() {
-            rl.question('You: ', async (input) => {
-                if (input.toLowerCase() === 'exit') {
-                    python.stdin.write('exit\n');
-                    rl.close();
-                    resolve();
-                    return;
-                }
-
-                if (!isReady) {
-                    console.log('⚠️ Chatbot not ready yet...');
-                    askUser();
-                    return;
-                }
-
-                // Send user input to Python
-                python.stdin.write(input + '\n');
-
-                // Save user input to DB
-                try {
-                    await pool.query(
-                        'INSERT INTO chat_history (user_id, sender, message) VALUES (?, ?, ?)',
-                        [user_id, 'user', input]
-                    );
-                } catch (err) {
-                    console.error('DB Error (user message):', err.message);
-                }
-
-                askUser();
-            });
-        }
-
-        askUser();
-    });
-
-    // Handle chatbot exit
-    python.on('close', (code) => {
-        console.log(`Chatbot exited with code ${code}`);
-    });
-}
-
-module.exports = { chatbotFeature };
+module.exports = router;
